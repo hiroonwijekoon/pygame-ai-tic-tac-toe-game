@@ -53,8 +53,14 @@ iterations = 0
 human_score = 0
 ai_score = 0
 
+#initialize difficulty level
+difficulty_level = 1
+
 # Font for displaying scores
 font = pygame.font.Font(pygame.font.match_font('freesansbold'), 36)
+font_title = pygame.font.Font(pygame.font.match_font('courier'), 42)
+font_level = pygame.font.Font(pygame.font.match_font('freesansbold'), 28)
+
 
 def draw_board():
     """
@@ -69,23 +75,46 @@ def draw_board():
     pygame.draw.line(screen, LINE_COLOR, (CELL_WIDTH, 200), (CELL_WIDTH, SCREEN_HEIGHT), 3)
     pygame.draw.line(screen, LINE_COLOR, (CELL_WIDTH * 2, 200), (CELL_WIDTH * 2, SCREEN_HEIGHT), 3)
 
+def draw_in_game_title():
+    # Define positions and sizes
+    maring_y_level = 20
+    margin_y_title = 80
+
+    if difficulty_level==1:
+        level_text_string = "Training Wheels"
+    elif difficulty_level==2:
+        level_text_string = "Rising Star"
+    elif difficulty_level==3:
+        level_text_string = "Tic-Tac-Titan"
+
+    # Draw difficulty level
+    level_text = font_level.render(f"Difficulty: {level_text_string}", True, (0, 0, 0))
+    level_rect = level_text.get_rect(center=(SCREEN_WIDTH//2, maring_y_level))
+    pygame.draw.rect(screen, BACKGROUND_COLOR, level_rect) 
+    screen.blit(level_text, level_rect)
+
+    # Draw game title
+    title_text = font_title.render("AI Tic-Tac-Toe", True, (0, 0, 0))
+    title_rect = title_text.get_rect(center=(SCREEN_WIDTH//2, margin_y_title))
+    pygame.draw.rect(screen, BACKGROUND_COLOR, title_rect) 
+    screen.blit(title_text, title_rect)
 
 def draw_scores():
     # Define positions and sizes
-    margin = 20
-    human_x = margin
-    ai_x = SCREEN_WIDTH - margin - 60
-    y = margin
+    human_x = 20
+    human_y= 150
+    ai_x = SCREEN_WIDTH - 80
+    ai_y = 150
 
     # Draw human player score
     human_text = font.render(f"Human: {human_score}", True, (0, 0, 0))
-    human_rect = human_text.get_rect(topleft=(human_x, y))
+    human_rect = human_text.get_rect(topleft=(human_x, human_y))
     pygame.draw.rect(screen, O_WIN_COLOR, human_rect) 
     screen.blit(human_text, human_rect)
 
     # Draw AI player score
     ai_text = font.render(f"AI: {ai_score}", True, (0, 0, 0))
-    ai_rect = ai_text.get_rect(topleft=(ai_x, y))
+    ai_rect = ai_text.get_rect(topleft=(ai_x, ai_y))
     pygame.draw.rect(screen, X_WIN_COLOR, ai_rect)
     screen.blit(ai_text, ai_rect)
 
@@ -196,62 +225,91 @@ def ai_turn():
     """
     Perform the AI's move using the heuristic evaluation
     """
-    # 1 If the board is empty, take the center
+
+    # Use techniques according to the difficulty levels
+
+    #  If the board is empty, take the center
     if board[1][1] == "":
         board[1][1] = AI  # AI takes the center
         return
-
-    # 2 Prioritize winning moves
-    for row in range(3):
-        for col in range(3):
-            if board[row][col] == "":  # If the cell is empty
-                board[row][col] = AI  # Simulate the AI's move
-                if check_win(AI):  # Check if this is a winning move for the AI
+    
+    if difficulty_level==1:
+        # Take any open cell
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] == "":  # If the cell is empty
+                    board[row][col] = AI
+                    print("Open cell")
                     return
-                board[row][col] = ""  # Reset the board back
 
-    # 3 Block opponent's winning moves
-    for row in range(3):
-        for col in range(3):
-            if board[row][col] == "":  # If the cell is empty
-                board[row][col] = HUMAN  # Simulate the human's move
-                if check_win(HUMAN):  # Check if this is a winning move for the human player - if so then block it
-                    board[row][col] = AI  # Block the cell to prevent losing
+    if difficulty_level==2:
+        # Prioritize winning moves
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] == "":  # If the cell is empty
+                    board[row][col] = AI  # Simulate the AI's move
+                    if check_win(AI):  # Check if this is a winning move for the AI
+                        print("Winning move found")
+                        return
+                    board[row][col] = ""  # Reset the board back
+
+        # Block opponent's winning moves
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] == "":  # If the cell is empty
+                    board[row][col] = HUMAN  # Simulate the human's move
+                    if check_win(HUMAN):  # Check if this is a winning move for the human player - if so then block it
+                        board[row][col] = AI  # Block the cell to prevent losing
+                        print("Blocked opponent's move")
+                        return
+                    board[row][col] = ""  # Reset the board back
+        
+        # Take any open cell
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] == "":  # If the cell is empty
+                    board[row][col] = AI
+                    print("Open cell")
                     return
-                board[row][col] = ""  # Reset the board back
+        
+    if difficulty_level==3:
+        # Prioritize winning moves
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] == "":  # If the cell is empty
+                    board[row][col] = AI  # Simulate the AI's move
+                    if check_win(AI):  # Check if this is a winning move for the AI
+                        return
+                    board[row][col] = ""  # Reset the board back
 
-    # Take any open cell
-    for row in range(3):
-        for col in range(3):
-            if board[row][col] == "":  # If the cell is empty
-                board[row][col] = AI
-                return
+        # Block opponent's winning moves
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] == "":  # If the cell is empty
+                    board[row][col] = HUMAN  # Simulate the human's move
+                    if check_win(HUMAN):  # Check if this is a winning move for the human player - if so then block it
+                        board[row][col] = AI  # Block the cell to prevent losing
+                        return
+                    board[row][col] = ""  # Reset the board back
+        # Run Minimax
+        global iterations
+        iterations = 0
+        best_score = -math.inf
+        move = [-1, -1]
+        # Iterate over the board and determine the best move
+        for row in range(3):
+            for col in range(3):
+                # Check if cell is available
+                if board[row][col] == "":
+                    board[row][col] = AI  # Simulate the move
+                    score = minimax(board, 0, False)
+                    board[row][col] = ""  # Undo the move
+                    if score > best_score:
+                        best_score = score
+                        move = [row, col]
 
-    # 4 Take fork opportunities 
-    # Look for moves that create a "fork," where the AI will have two potential winning moves on the next turn. This forces the opponent to defend in two places at once, which is not possible.
-
-    # 5 Block opponents forks
-    # Prevent the opponent from creating a fork. If the opponent has a chance to fork, try to force them into a position where they can only block your winning move instead of creating their fork.
-
-    # 5 Otherwise run Minimax if we have incineration situation
-"""     global iterations
-    iterations = 0
-    best_score = -math.inf
-    move = [-1, -1]
-    # Iterate over the board and determine the best move
-    for row in range(3):
-        for col in range(3):
-            # Check if cell is available
-            if board[row][col] == "":
-                board[row][col] = AI  # Simulate the move
-                score = minimax(board, 0, False)
-                board[row][col] = ""  # Undo the move
-                if score > best_score:
-                    best_score = score
-                    move = [row, col]
-
-    print(f"number of iterations: {iterations}")
-    board[move[0]][move[1]] = AI  # Make the best move """
+        print(f"number of iterations: {iterations}")
+        board[move[0]][move[1]] = AI  # Make the best move
 
 def reset_game():
     global game_over, winner, board, current_player, last_player
@@ -266,7 +324,7 @@ def reset_game():
     last_player = current_player # Update last player to the current player
 
 def main_loop():
-    global running, game_over, current_player, winner, human_score, ai_score
+    global running, game_over, current_player, winner, human_score, ai_score, last_player
 
     
     clock = pygame.time.Clock()  # Create a clock object
@@ -326,6 +384,7 @@ def main_loop():
             draw_scores()
             draw_board()
             draw_marks()
+            draw_in_game_title()
 
 
         
