@@ -28,9 +28,17 @@ O_COLOR = (0, 0, 200)  # Blue
 
 TEXT_COLOR = (30, 30, 30)  # Black
 
+# Sound Effects
+mark_sfx = pygame.mixer.Sound("./sound_effects/human.mp3")
+win_sfx = pygame.mixer.Sound("./sound_effects/won.mp3")
+loss_sfx = pygame.mixer.Sound("./sound_effects/lose.mp3")
+draw_sfx = pygame.mixer.Sound("./sound_effects/draw.mp3")
+
+sound_played = False
+
 # Screen setup
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Tic Tac Toe with Heuristics + AI : M23W0307")
+pygame.display.set_caption("AI Tic-Tac-Toe")
 screen.fill(BACKGROUND_COLOR)
 
 # Tic Tac Toe board (3×3 matrix)
@@ -312,7 +320,8 @@ def ai_turn():
         board[move[0]][move[1]] = AI  # Make the best move
 
 def reset_game():
-    global game_over, winner, board, current_player, last_player
+    global game_over, winner, board, current_player, last_player, sound_played
+    sound_played = False
     game_over = False
     winner = None
     board = [["" for _ in range(3)] for _ in range(3)]
@@ -324,7 +333,7 @@ def reset_game():
     last_player = current_player # Update last player to the current player
 
 def main_loop():
-    global running, game_over, current_player, winner, human_score, ai_score, last_player
+    global running, game_over, current_player, winner, human_score, ai_score, last_player, sound_played, difficulty_level
 
     
     clock = pygame.time.Clock()  # Create a clock object
@@ -343,6 +352,15 @@ def main_loop():
                     pygame.quit()
                     sys.exit()
 
+                if event.key == K_w: #increase difficulty
+                    if difficulty_level<3:
+                        difficulty_level+=1
+                
+                if event.key == K_s: #decrease difficulty
+                    if difficulty_level>1:
+                        difficulty_level-=1
+ 
+
                 if event.key == pygame.K_RETURN and game_over: # Handle enter key press -> start next round
                     reset_game()
 
@@ -355,6 +373,7 @@ def main_loop():
 
                 # Check if this is a valid move - it must be an empty cell
                 if 0 <= clicked_row < 3 and 0 <= clicked_col < 3 and board[clicked_row][clicked_col] == "": #making sure it takes inputs only from the board area
+                    mark_sfx.play()
                     board[clicked_row][clicked_col] = HUMAN
                     if check_win(HUMAN):
                         game_over = True
@@ -392,10 +411,19 @@ def main_loop():
             # Render Winner
             if winner == AI:
                 winner_text = font.render("AI Player Won!!", True, TEXT_COLOR)
+                if sound_played==False:
+                    loss_sfx.play()
+                    sound_played=True
             elif winner == HUMAN:
                 winner_text = font.render("You Won!", True, TEXT_COLOR)
+                if sound_played==False:
+                    win_sfx.play()
+                    sound_played=True
             elif winner=="Draw":
                 winner_text = font.render("Draw!", True, TEXT_COLOR)
+                if sound_played==False:
+                    draw_sfx.play()
+                    sound_played=True
 
             instruction_text = font.render("Press enter to continue", True, TEXT_COLOR)
 
